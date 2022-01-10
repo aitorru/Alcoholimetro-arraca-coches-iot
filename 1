@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-import time, sys, requests
+import time, sys
 from grove.adc import ADC
+from grove.grove_led import GroveLed
 
 class CustomAlcoholSensor(object):
     # Pass the channel that the sensor is connected to.
@@ -14,10 +15,10 @@ class CustomAlcoholSensor(object):
         RS_air = 33.0
         ratio = 0.0
         sensorValue = 0.0
-        for i in range(1500):
+        for i in range(500):
             sensorValue = sensorValue + float(self.adc.read(self.channel))
             time.sleep(0.001)
-        sensorValue = sensorValue / 1500.0
+        sensorValue = sensorValue / 500.0
         sensorVolt = sensorValue/1024*5.0
         RS_gas = float(sensorVolt/(5.0 - sensorVolt))
         print("RS_gas: {}".format(RS_gas))
@@ -27,30 +28,16 @@ class CustomAlcoholSensor(object):
 
 def main():
     sensor  = CustomAlcoholSensor(2)
-    
-    url = "https://iot-visual.vercel.app/api/postData?_vercel_no_cache=1"
-
+    led     = GroveLed(0)
     print("Reading")
-    value = sensor.value
-    time.sleep(1)
-    print(value)
-    if (value <= 0.01):
-    # Send POST req to server
-        body = {
-        "rpi": "lab1",
-        "owner": "amazon",
-        "arranca": False
-        }
-        # Now do the post req
-        requests.post(url, json = body)
-    else:
-        body = {
-        "rpi": "lab1",
-        "owner": "amazon",
-        "arranca": True
-        }
-        # Do the req
-        requests.post(url, json = body)
+
+    while True:
+        value = sensor.value
+        print(value)
+        if (value <= 0.01):
+            led.on()
+        else:
+            led.off()
         time.sleep(1)
 
 if __name__ == '__main__':
